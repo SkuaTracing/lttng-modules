@@ -288,10 +288,6 @@ int lttng_context_init(void)
 	if (ret) {
 		printk(KERN_WARNING "Cannot add context lttng_add_vpid_to_ctx");
 	}
-	ret = lttng_add_jaeger_trace_id_to_ctx(&lttng_static_ctx);
-		if (ret) {
-			printk(KERN_WARNING "Cannot add context lttng_add_jaeger_trace_id_to_ctx");
-		}
 	ret = lttng_add_cpu_id_to_ctx(&lttng_static_ctx);
 	if (ret) {
 		printk(KERN_WARNING "Cannot add context lttng_add_cpu_id_to_ctx");
