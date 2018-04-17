@@ -42,7 +42,7 @@ union jaeger_data_packed {
 	char as_char[sizeof(struct _jaeger_data_packed)];
 };
 
-#define LTTNG_JAEGER_CTX_LEN (sizeof(struct jaeger_data_packed))
+#define LTTNG_JAEGER_CTX_LEN (sizeof(union jaeger_data_packed))
 
 static
 size_t tid_get_size(size_t offset)
@@ -58,7 +58,7 @@ void tid_record(struct lttng_ctx_field *field,
 		 struct lib_ring_buffer_ctx *ctx,
 		 struct lttng_channel *chan)
 {
-	struct jaeger_data_packed store;
+	union jaeger_data_packed store = &current->jaeger_trace_id;
 
 	store.data.tid = task_pid_nr(current);
 	store.data.jaeger_trace_id = current->jaeger_trace_id;
@@ -68,6 +68,7 @@ void tid_record(struct lttng_ctx_field *field,
 	store.data.pad = 0;
 	store.data.padd = 0;
 
+	// TODO: come back to this because storing as a byte array is not idea in terms of alignment
 	chan->ops->event_write(ctx, store.as_char, LTTNG_JAEGER_CTX_LEN);
 }
 
@@ -76,7 +77,9 @@ void tid_get_value(struct lttng_ctx_field *field,
 		struct lttng_probe_ctx *lttng_probe_ctx,
 		union lttng_ctx_value *value)
 {
-	value->str = (char *)(&current->jaeger_trace_id);
+	union jaeger_data_packed *store = &current->jaeger_trace_id;
+	store->data.tid = task_pid_nr(current);
+	value->str = store->as_char;
 }
 
 int lttng_add_tid_to_ctx(struct lttng_ctx **ctx)
