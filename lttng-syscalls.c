@@ -419,6 +419,15 @@ void syscall_entry_probe(void *__data, struct pt_regs *regs, long id)
 		table_len = ARRAY_SIZE(sc_table);
 		unknown_event = chan->sc_unknown;
 	}
+
+	// jaeger syscall_entry
+	if (current->jaeger_trace_id) {
+		// generate random uint64_t
+		uint64_t span = ((uint64_t)get_random_int()) << 32 | (uint64_t)get_random_int();
+
+		current->jaeger_span_id = span;
+	}
+
 	if (unlikely(id < 0 || id >= table_len)) {
 		syscall_entry_unknown(unknown_event, regs, id);
 		return;
@@ -573,6 +582,7 @@ void syscall_exit_probe(void *__data, struct pt_regs *regs, long ret)
 		table_len = ARRAY_SIZE(sc_exit_table);
 		unknown_event = chan->sc_exit_unknown;
 	}
+
 	if (unlikely(id < 0 || id >= table_len)) {
 		syscall_exit_unknown(unknown_event, regs, id, ret);
 		return;
@@ -680,6 +690,11 @@ void syscall_exit_probe(void *__data, struct pt_regs *regs, long ret)
 	}
 	default:
 		break;
+	}
+
+	// jaeger syscall_exit
+	if (current->jaeger_span_id) {
+		current->jaeger_span_id = 0;
 	}
 }
 
