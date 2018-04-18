@@ -32,9 +32,7 @@ struct _jaeger_data_packed {
 	uint64_t jaeger_trace_id;
 	uint64_t jaeger_parent_id;
 	uint64_t jaeger_span_id;
-	char pad;
 	pid_t tid;
-	char padd;
 };
 
 union jaeger_data_packed {
@@ -48,8 +46,6 @@ static inline union jaeger_data_packed *task_jaeger_nr(struct task_struct *tsk)
 {
 	union jaeger_data_packed *store = (union jaeger_data_packed *)(&tsk->jaeger_trace_id);
 	store->data.tid = task_pid_nr(current);
-	store->data.pad = 0;
-	store->data.padd = 0;
 	return store;
 }
 
