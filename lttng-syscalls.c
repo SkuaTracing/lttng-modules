@@ -31,6 +31,7 @@
 #include <linux/stringify.h>
 #include <linux/file.h>
 #include <linux/anon_inodes.h>
+#include <linux/random.h>
 #include <asm/ptrace.h>
 #include <asm/syscall.h>
 
