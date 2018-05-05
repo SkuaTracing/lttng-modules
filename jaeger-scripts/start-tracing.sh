@@ -1,5 +1,5 @@
 #!/bin/bash
-
+set -x
 docker stop jaeger_all_in_one
 docker rm jaeger_all_in_one
 docker run -d -e \
@@ -11,7 +11,7 @@ docker run -d -e \
 	-p 16686:16686 \
 	-p 14268:14268 \
 	-p 9411:9411 \
-	--name jaeger_all_in_one
+	--name jaeger_all_in_one \
 	jaegertracing/all-in-one:latest
 sleep 9
 
@@ -20,5 +20,5 @@ lttng create my-kernel-session --live
 lttng enable-event --kernel --all --syscall
 lttng add-context --kernel --type=pid --type=tid
 lttng start
-lttng untrack --pid --all
+lttng untrack -k --pid --all
 
