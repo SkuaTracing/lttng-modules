@@ -66,6 +66,7 @@ main()
 //    parent_span->Log({ { "event", "simple log" }, { "abc", 123 } });
 
     res->end(response.data(), response.length());
+    inject_jaeger(0, 0);
     parent_span->Finish();
   });
 
