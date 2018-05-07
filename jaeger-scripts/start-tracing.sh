@@ -22,3 +22,11 @@ lttng add-context --kernel --type=pid --type=tid
 lttng start
 lttng untrack -k --pid --all
 
+# start lttng-adapter
+(
+source ~/.bashrc
+cd ~/golang/src/github.com/hsheth2/lttng-adapter
+go build main.go
+babeltrace --input-format=lttng-live net://localhost/host/voxel/my-kernel-session | ./main
+)
+
