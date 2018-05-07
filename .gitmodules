@@ -1,0 +1,3 @@
+[submodule "jaeger-tests/tiny-http/uWebSockets"]
+	path = jaeger-tests/tiny-http/uWebSockets
+	url = https://github.com/uNetworking/uWebSockets.git
