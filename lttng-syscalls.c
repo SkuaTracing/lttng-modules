@@ -427,6 +427,9 @@ void syscall_entry_probe(void *__data, struct pt_regs *regs, long id)
 		uint64_t span = ((uint64_t)get_random_int()) << 32 | (uint64_t)get_random_int();
 
 		current->jaeger_span_id = span;
+	} else {
+		// drop traces without jaeger information
+		return;
 	}
 
 	if (unlikely(id < 0 || id >= table_len)) {
@@ -582,6 +585,11 @@ void syscall_exit_probe(void *__data, struct pt_regs *regs, long ret)
 		table = sc_exit_table;
 		table_len = ARRAY_SIZE(sc_exit_table);
 		unknown_event = chan->sc_exit_unknown;
+	}
+
+	if (!current->jaeger_trace_id) {
+		// drop traces without jaeger information
+		return;
 	}
 
 	if (unlikely(id < 0 || id >= table_len)) {
