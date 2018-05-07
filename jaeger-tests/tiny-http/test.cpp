@@ -29,9 +29,14 @@ void inject_jaeger(uint64_t jaeger_trace_id, uint64_t jaeger_parent_id) {
 }
 
 int main() {
+  auto constant = true;
+  auto sampler = constant ?
+	 jaegertracing::samplers::Config(jaegertracing::kSamplerTypeConst, 1) :
+         jaegertracing::samplers::Config(jaegertracing::kSamplerTypeProbabilistic, 0.001);
+
   auto config = jaegertracing::Config(
       false,
-      jaegertracing::samplers::Config(jaegertracing::kSamplerTypeProbabilistic, 0.001),
+      sampler,
       jaegertracing::reporters::Config(
           jaegertracing::reporters::Config::kDefaultQueueSize,
           std::chrono::seconds(1), true));
@@ -48,7 +53,8 @@ int main() {
     jaegertracing::Span *parent_span =
         (jaegertracing::Span *)_parent_span.get();
     jaegertracing::SpanContext ctx = parent_span->contextNoLock();
-    if (ctx.isSampled()) {
+    bool sampled = constant || ctx.isSampled();
+    if (sampled) {
       uint64_t trace_id = ctx.traceID().low();
       uint64_t span_id = ctx.spanID();
       inject_jaeger(trace_id, span_id);
@@ -61,7 +67,7 @@ int main() {
     //    parent_span->Log({ { "event", "simple log" }, { "abc", 123 } });
 
     res->end(response.data(), response.length());
-    if (ctx.isSampled()) {
+    if (sampled) {
       inject_jaeger(0, 0);
     }
     parent_span->Finish();

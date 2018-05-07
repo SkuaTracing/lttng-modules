@@ -1,5 +1,13 @@
 #!/bin/bash
 set -x
+
+# jaeger-ctx module
+(
+	cd ../jaeger-ctx
+	insmod jaeger_ctx.ko
+)
+
+# docker
 docker stop jaeger_all_in_one
 docker rm jaeger_all_in_one
 docker run -d -e \
