@@ -391,6 +391,19 @@ void syscall_entry_probe(void *__data, struct pt_regs *regs, long id)
 	const struct trace_syscall_entry *table, *entry;
 	size_t table_len;
 
+	// jaeger syscall_entry
+	if (current->jaeger_trace_id) {
+		// generate random uint64_t
+		uint64_t span = ((uint64_t)get_random_int()) << 32 | (uint64_t)get_random_int();
+
+		current->jaeger_span_id = span;
+	} else {
+		// drop traces without jaeger information
+		current->jaeger_parent_id = 0;
+		current->jaeger_span_id = 0;
+		return;
+	}
+
 	if (unlikely(in_compat_syscall())) {
 		struct lttng_syscall_filter *filter;
 
@@ -419,17 +432,6 @@ void syscall_entry_probe(void *__data, struct pt_regs *regs, long id)
 		table = sc_table;
 		table_len = ARRAY_SIZE(sc_table);
 		unknown_event = chan->sc_unknown;
-	}
-
-	// jaeger syscall_entry
-	if (current->jaeger_trace_id) {
-		// generate random uint64_t
-		uint64_t span = ((uint64_t)get_random_int()) << 32 | (uint64_t)get_random_int();
-
-		current->jaeger_span_id = span;
-	} else {
-		// drop traces without jaeger information
-		return;
 	}
 
 	if (unlikely(id < 0 || id >= table_len)) {
@@ -556,6 +558,14 @@ void syscall_exit_probe(void *__data, struct pt_regs *regs, long ret)
 	size_t table_len;
 	long id;
 
+	// jaeger syscall_exit
+	if (!current->jaeger_trace_id) {
+		// drop traces without jaeger information
+		current->jaeger_parent_id = 0;
+		current->jaeger_span_id = 0;
+		return;
+	}
+
 	id = syscall_get_nr(current, regs);
 	if (unlikely(in_compat_syscall())) {
 		struct lttng_syscall_filter *filter;
@@ -585,11 +595,6 @@ void syscall_exit_probe(void *__data, struct pt_regs *regs, long ret)
 		table = sc_exit_table;
 		table_len = ARRAY_SIZE(sc_exit_table);
 		unknown_event = chan->sc_exit_unknown;
-	}
-
-	if (!current->jaeger_trace_id) {
-		// drop traces without jaeger information
-		return;
 	}
 
 	if (unlikely(id < 0 || id >= table_len)) {
@@ -702,7 +707,7 @@ void syscall_exit_probe(void *__data, struct pt_regs *regs, long ret)
 	}
 
 	// jaeger syscall_exit
-	if (current->jaeger_span_id) {
+	if (current->jaeger_trace_id || current->jaeger_span_id) {
 		current->jaeger_span_id = 0;
 	}
 }
