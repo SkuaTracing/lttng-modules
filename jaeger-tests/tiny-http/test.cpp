@@ -13,23 +13,9 @@ using namespace opentracing;
 
 using namespace uWS;
 
-void inject_jaeger(uint64_t jaeger_trace_id, uint64_t jaeger_parent_id) {
-  // printf("jaeger_trace_id: %llu, jaeger_parent_id: %llu\n",
-  //       jaeger_trace_id,
-  //       jaeger_parent_id);
-
-  FILE *procfile = fopen("/proc/lttng_jaeger", "w");
-  uint64_t *buf = (uint64_t *)malloc(sizeof(uint64_t) * 2);
-
-  buf[0] = jaeger_trace_id;
-  buf[1] = jaeger_parent_id;
-
-  fwrite(buf, sizeof(uint64_t), 2, procfile);
-  fclose(procfile);
-}
 
 int main() {
-  auto constant = true;
+  auto constant = false;
   auto sampler = constant ?
 	 jaegertracing::samplers::Config(jaegertracing::kSamplerTypeConst, 1) :
          jaegertracing::samplers::Config(jaegertracing::kSamplerTypeProbabilistic, 0.001);
@@ -57,7 +43,7 @@ int main() {
     if (sampled) {
       uint64_t trace_id = ctx.traceID().low();
       uint64_t span_id = ctx.spanID();
-      inject_jaeger(trace_id, span_id);
+      //inject_jaeger(trace_id, span_id);
     }
 
     // std::cout << trace_id << ", " << span_id << std::endl;
@@ -68,7 +54,7 @@ int main() {
 
     res->end(response.data(), response.length());
     if (sampled) {
-      inject_jaeger(0, 0);
+      //inject_jaeger(0, 0);
     }
     parent_span->Finish();
   });
