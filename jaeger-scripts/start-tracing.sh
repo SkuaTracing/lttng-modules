@@ -25,7 +25,7 @@ sleep 9
 
 # relayd started automatically
 lttng create my-kernel-session --live
-lttng enable-event --kernel --all --syscall
+lttng enable-event --kernel --all #--syscall
 lttng add-context --kernel --type=pid --type=tid
 lttng start
 lttng untrack -k --pid --all

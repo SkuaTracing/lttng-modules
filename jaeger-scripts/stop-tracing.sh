@@ -3,7 +3,7 @@ set -x
 lttng stop
 sleep 10
 lttng destroy
-sleep 5
+sleep 3
 killall babeltrace
-
+sleep 0.1
 
