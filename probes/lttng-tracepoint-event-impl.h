@@ -1170,7 +1170,7 @@ static void __event_probe__##_name(void *__data, _proto)		      \
 		if (likely(!__filter_record))				      \
 			goto __post;					      \
 	}								      \
-	if (!current->jaeger_trace_id) {                                      \
+	if (!current->jaeger_span_id) {                                       \
 		goto __post;                                                  \
 	}                                                                     \
 	__event_len = __event_get_size__##_name(tp_locvar, _args);	      \
@@ -1247,7 +1247,7 @@ static void __event_probe__##_name(void *__data)			      \
 		if (likely(!__filter_record))				      \
 			goto __post;					      \
 	}								      \
-	if (!current->jaeger_trace_id) {                                      \
+	if (!current->jaeger_span_id) {                                       \
 		goto __post;                                                  \
 	}                                                                     \
 	__event_len = __event_get_size__##_name(tp_locvar);		      \
